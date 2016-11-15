@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------*/
-/* ITS60304– Assignment #1 */
+/* ITS60304â€“ Assignment #1 */
 /* C Programming */
 /* Student Name: <Nicholas Lai Jin Yung> <Liew Chun Yu> */
 /* Student ID: <0329795> <0323567> */
@@ -21,7 +21,6 @@ void deleteCustomer();
 void showCustomer();
 void passByReference(float i, float j);
 void showTotalMontlyIncome();
-int main(void)//Function main begins program execution
 
 struct customerDetails//Structure for files
 {
@@ -32,6 +31,7 @@ struct customerDetails//Structure for files
     int newReading;
 };
 
+int main(void)//Function main begins program execution
 {
     char z[99];//Switch Case and printf customer found
 
