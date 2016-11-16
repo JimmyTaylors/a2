@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-char customerID[5], customerName[40], k[5];//Customer ID, Customer Name, Scan Customer ID
-int previousReading, currentReading, newReading;//Previous Reading, Current Reading, and New Reading
+char customerID[5], customerName[40], k[5], z[99];//Customer ID, Customer Name, Scan Customer ID, Switch Case and printf customer found
+int previousReading, currentReading, newReading, y;//Previous Reading, Current Reading, New Reading, and boolean variable
 float totalUsage, totalRevenue;
 float charges;//Current charges
 float newCharges, x=0;//Calculated charges for case 1
@@ -22,7 +22,7 @@ void showCustomer();
 void passByReference(float i, float j);
 void showTotalMontlyIncome();
 
-struct customerDetails//Structure for files
+struct records//Structure for files
 {
     char customerID[5];
     char customerName[40];
@@ -33,9 +33,7 @@ struct customerDetails//Structure for files
 
 int main(void)//Function main begins program execution
 {
-    char z[99];//Switch Case and printf customer found
-
-	do//Loop menu after every function
+	do//Loop main menu after every function
     {
         printf("------------------------------------\n"
         "Electricity Management System\n"
@@ -48,7 +46,7 @@ int main(void)//Function main begins program execution
         "6. Show total monthly income\n"
         "7. Exit\n"
         "------------------------------------\n"
-        "Enter Option:");
+        "Enter Option: ");
         scanf("%s",&z[0]);
         printf("------------------------------------\n");//Menu
         switch(z[0])//Menu options
@@ -78,14 +76,13 @@ int main(void)//Function main begins program execution
                 printf("Invalid Option Please Choose Again\n");
                 break;
         }//End Switch
-    }while(z!=7);//End Do While loop if case is 7
+    }while(strcmp(z,"7")!=0);//End Do While loop if case is 7
 	return 0;
 }
 
 void recordUsage()
 {
     float a, b, c, d, e, f;//Case 1 calculation
-    int y;
 
     if((f1 = fopen("customer.txt", "r")) == NULL)
     {
@@ -100,7 +97,7 @@ void recordUsage()
             while(!feof(f1))//Loop until end of file
             {
                 fscanf(f1,"%[^;];%[^;];%d;%d;%f\n", customerID, customerName, &previousReading, &currentReading, &charges);//Scan file
-                if((strcmp(k, customerID)) == 0)//If customer ID is found then do calculations
+                if(strcmp(k, customerID) == 0)//If customer ID is found then do calculations
                 {
                     a=0, b=0, c=0, d=0, e=0, f=0, y=0;//Reset values when looping
                     printf("Enter current reading (in kWh): ");//Enter new reading
@@ -183,7 +180,58 @@ void addCutomer()//Case 2
 
 void editCustomer()//Case 3
 {
-    printf("This option allows user to edit customer info\n");
+    if((f1 = fopen("customer.txt", "r")) == NULL)
+    {
+        puts("Information is corrupted");
+    }
+    else
+    {
+        printf("Enter Customer ID, -1 to exit: ");
+        scanf("%s", k);
+        while(strcmp(k, "-1") != 0)
+        {
+            while(!feof(f1))//Loop until end of file
+            {
+                fscanf(f1,"%[^;];%[^;];%d;%d;%f\n", customerID, customerName, &previousReading, &currentReading, &charges);//Scan file
+                if(strcmp(k, customerID) == 0)//If customer ID is found then edit menu
+                {
+                    y=0;
+                    printf("------------------------------------\n"
+                        "Edit\n"
+                        "------------------------------------\n"
+                        "1. Customer Name\n"
+                        "2. Charges\n"
+                        "3. Different ID\n"
+                        "------------------------------------\n"
+                        "Enter Option: ");
+                    scanf("%s",&z[0]);
+                    printf("------------------------------------\n");//Menu
+                    switch(z[0])//Edit menu options
+                    {
+                        case '1'://Edit Customer Name
+                            break;
+                        case '2'://Edit Charges
+                            break;
+                        case '3'://Exit Edit
+                            break;
+                        default://If invalid input enter a new one
+                            break;//Break out of loop if user found
+                    }
+                    break;
+                }
+                else y=1;//If customer ID not found then print not found
+            }
+            if(y==1)
+            {
+                printf("Customer not found, enter existing customer\n");
+                printf("------------------------------------\n");
+            }
+            rewind(f1);//Reset pointer
+            printf("Enter Customer ID, -1 to exit: ");
+            scanf("%s", k);
+        }
+    }
+    fclose(f1);
     return;
 }
 
@@ -209,6 +257,7 @@ void showCustomer()//Case 5
         }
     }
     fclose(f1);
+    return;
 }
 
 void passByReference(float i, float j)
