@@ -6,6 +6,42 @@
 /*-------------------------------------------------------------------*/
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#define max 999
+
+struct customer
+{
+    char id[5];
+    char name[20];
+    int pR;
+    int cR;
+    float charge;
+};
+
+struct customer saveToStruct (char *str)
+{
+    struct customer res;
+    int flag = 0;
+    char *token = strtok(str, ";");
+
+    while( token != NULL )
+    {
+        if (0 == flag)
+            strcpy(res.id, token);
+        else if (1 == flag)
+            strcpy(res.name, token);
+        else if (2 == flag)
+            res.pR = atoi(token);
+        else if (3 == flag)
+            res.cR = atoi(token);
+        else
+            res.charge = atof(token);
+
+        flag++;
+        token = strtok( NULL, ";" );
+    }
+    return res;
+};
 
 char customerID[5], customerName[40], k[5], z[99];//Customer ID, Customer Name, Scan Customer ID, Switch Case and printf customer found
 int previousReading, currentReading, newReading, y;//Previous Reading, Current Reading, New Reading, and boolean variable
@@ -21,15 +57,6 @@ void deleteCustomer();
 void showCustomer();
 void passByReference(float i, float j);
 void showTotalMontlyIncome();
-
-struct records//Structure for files
-{
-    char customerID[5];
-    char customerName[40];
-    int previousReading;
-    int currentReading;
-    int newReading;
-};
 
 int main(void)//Function main begins program execution
 {
@@ -83,64 +110,82 @@ int main(void)//Function main begins program execution
 void recordUsage()
 {
     float a, b, c, d, e, f;//Case 1 calculation
+    struct customer cust[5];
+    int i;
+    int flag = 0;
+    char sL[max];
 
-    if((f1 = fopen("customer.txt", "r")) == NULL)
+    if((f1 = fopen("customer.txt", "r + w")) == NULL)
     {
         puts("Information is corrupted");
     }
     else
     {
+        while(fgets(sL, max, f1))
+        {
+            cust[flag] = saveToStruct(sL);
+            flag++;
+        }
         printf("Enter Customer ID, -1 to exit: ");
-        scanf("%s", k);
+        scanf("%s", &k);
+
         while(strcmp(k, "-1") != 0)
         {
-            while(!feof(f1))//Loop until end of file
+        for(i=0; i<5; i++)
+        {
+            if((strcmp(k, cust[i].id)) == 0)//If customer ID is found then do calculations
             {
-                fscanf(f1,"%[^;];%[^;];%d;%d;%f\n", customerID, customerName, &previousReading, &currentReading, &charges);//Scan file
-                if(strcmp(k, customerID) == 0)//If customer ID is found then do calculations
-                {
-                    a=0, b=0, c=0, d=0, e=0, f=0, y=0;//Reset values when looping
-                    printf("Enter current reading (in kWh): ");//Enter new reading
-                    scanf("%d", &newReading);
-                    newCharges = newReading - currentReading;//Calculate new charge
+                printf("%-5s %-20s %-10d %-10d %-10.2f\n", cust[i].id, cust[i].name, cust[i].pR, cust[i].cR, cust[i].charge);
+                a=0, b=0, c=0, d=0, e=0, f=0, y=0;//Reset values when looping
+                printf("Enter current reading (in kWh): ");//Enter new reading
+                scanf("%d", &newReading);
+                newCharges = newReading - cust[i].cR;//Calculate new charge
                     if(newCharges>0, newCharges<=200)
                     {
                         a = newCharges;
+                        x = newCharges;
                     }
                     else if(newCharges>200, newCharges<=300)
                     {
-                        b = newCharges-200;
+                        x = newCharges-200;
                         a = 200;
                         b = x;
+                        x = (x*33.40)+200*21.80;
                     }
                     else if(newCharges>300, newCharges<=600)
                     {
-                        c = newCharges-300;
+                        x = newCharges-300;
                         a = 200;
                         b = 100;
+                        c = x;
+                        x = (x*51.60)+200*21.80+100*33.40;
                     }
                     else if(newCharges>600, newCharges<=900)
                     {
-                        d = newCharges-600;
+                        x = newCharges-600;
                         a = 200;
                         b = 100;
                         c = 300;
+                        d = x;
+                        x = (x*54.60)+200*21.80+100*33.40+300*51.60;
                     }
                     else if(newCharges>900)
                     {
-                        e = newCharges-900;
+                        x = newCharges-900;
                         a = 200;
                         b = 100;
                         c = 300;
                         d = 300;
+                        e = x;
+                        x = (x*57.10)+200*21.80+100*33.40+300*51.60+300*54.60;
                     }
 
                     f = a*0.218+b*0.334+c*0.516+d*0.546+e*0.571;
                     if(f<3)
                         f=3;
                     printf("------------------------------------\n");
-                    printf("Customer ID  :%s\n", customerID);//Bill
-                    printf("Customer Name:%s\n\n", customerName);
+                    printf("Customer ID  :%s\n", cust[i].id);//Bill
+                    printf("Customer Name:%s\n\n", cust[i].name);
                     printf("%-22s%-21s%-14s%s\n", "Block Tariff (kWh)", "Block Usage (kWh)", "Rate (RM)", "Charges (RM)");
                     printf(" %-21d%7.2f%20.3f%15.2f\n", 200, a, 0.218, a*0.218);
                     printf(" %-21d%7.2f%20.3f%15.2f\n", 100, b, 0.334, b*0.334);
@@ -151,24 +196,41 @@ void recordUsage()
                     printf("%-16s%8s%10.2f\n\n", "Amount due", "RM", f);
                     printf("%-19s%-9s%-6s\n", " Meter Reading   ", "Usage", "Unit");
                     printf("%-9s%s\n", "Previous", "Current");
-                    printf("%-9d%-10d%-9.2f%s\n", currentReading, newReading, newCharges, "kWh");
+                    printf("%-9d%-10d%-9.2f%s\n", cust[i].cR, newReading, newCharges, "kWh");
                     printf("------------------------------------\n");
                     passByReference(f,newCharges);
+                    cust[i].pR = cust[i].cR;
+                    cust[i].cR = newReading;
+                    cust[i].charge = newCharges;
                     break;//Break out of loop if user found
-                }
-                else y=1;//If customer ID not found then print not found
             }
+
+            else
+            {
+                y=1;//If customer ID not found then print not found
+            }
+
+        }
+
+
             if(y==1)
             {
                 printf("\nCustomer not found, enter existing customer\n");
                 printf("------------------------------------\n");
             }
+
             rewind(f1);//Reset pointer
+
+            for (i=0; i<5; i++)
+            {
+                fprintf(f1, "%s;%s;%d;%d;%.2f\n", cust[i].id, cust[i].name, cust[i].pR, cust[i].cR, cust[i].charge);
+            }
+
             printf("Enter Customer ID, -1 to exit: ");
             scanf("%s", k);
         }
-    }
     fclose(f1);
+    }
     return;
 }
 
